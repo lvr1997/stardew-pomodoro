@@ -18,7 +18,7 @@ onMounted(() => {
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Header: SessionPanel, Title, TodoPanel in one row -->
-     <div class="flex items-top justify-between gap-6 px-12 py-6">
+     <div class="flex items-top justify-between gap-6 p-6">
         <!-- Left: SessionPanel -->
         <div class="flex-shrink-0 w-64">
           <SessionPanel />
@@ -26,7 +26,7 @@ onMounted(() => {
 
         <!-- Center: Title -->
         <div class="flex-1 text-center">
-          <h1 class="text-3xl font-bold text-gray-900">Stardew Library</h1>
+          <h1 class="text-3xl font-bold text-yellow-600/50">Stardew Library</h1>
           <p class="text-gray-500 my-2">Welcome to your personal study space</p>
         </div>
 

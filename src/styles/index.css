@@ -1,22 +1,29 @@
 @import './reset.css';
 
+/* English font - Pixel (for ASCII and Latin) */
 @font-face {
-    font-family: 'pixel';
-    src: url('../assets/fonts/fusion-pixel-10px-monospaced-zh_hans.otf.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'pixel';
+    font-family: 'hybrid-font';
     src: url('../assets/fonts/fusion-pixel-10px-monospaced-latin.otf.woff') format('woff');
     font-weight: normal;
     font-style: normal;
-    unicode-range: U+0000-00FF;
+    unicode-range: U+0000-00FF, U+0100-017F, U+0180-024F;
+}
+
+/* Chinese font - KNMaiyuan (for CJK characters) */
+@font-face {
+    font-family: 'hybrid-font';
+    src: url('../assets/fonts/KNMaiyuan-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    unicode-range: U+4E00-9FFF, U+3400-4DBF, U+F900-FAFF;
 }
 
 body {
-    font-family: 'pixel', monospace;
+    font-family: 'hybrid-font', monospace;
     background-color: #f9f9f9;
     color: #333;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }

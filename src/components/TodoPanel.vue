@@ -102,7 +102,7 @@
             : 'bg-gray-200 text-gray-500 cursor-not-allowed'"
         >
           <i class="i-tabler-plus w-3 h-3" />
-          <span>Group</span>
+          <span>New Group</span>
         </button>
       </div>
     </div>

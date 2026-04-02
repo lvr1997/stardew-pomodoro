@@ -5,6 +5,7 @@ export interface Session {
   id: string
   name: string
   focusTime: number // 专注时间（分钟）
+  timerMode: 'countdown' | 'accumulate' // 倒计时或正计时
   createdAt: number
 }
 
@@ -28,11 +29,12 @@ export const useSessionStore = defineStore('session', () => {
     }
   }
 
-  const createSession = (name: string, focusTime: number) => {
+  const createSession = (name: string, focusTime: number, timerMode: 'countdown' | 'accumulate' = 'countdown') => {
     const newSession: Session = {
       id: Date.now().toString(),
       name,
       focusTime,
+      timerMode,
       createdAt: Date.now()
     }
     currentSession.value = newSession
