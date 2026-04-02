@@ -1,0 +1,15 @@
+@import './reset.css';
+
+@font-face {
+    font-family: 'pixel';
+    src: url('../assets/fonts/fusion-pixel-10px-monospaced-latin.otf.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    unicode-range: U+0000-00FF;
+}
+
+body {
+    font-family: 'pixel', monospace;
+    background-color: #f9f9f9;
+    color: #333;
+}
