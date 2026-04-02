@@ -26,7 +26,7 @@ onMounted(() => {
 
         <!-- Center: Title -->
         <div class="flex-1 text-center">
-          <h1 class="text-3xl font-bold text-gray-900">Starew Library</h1>
+          <h1 class="text-3xl font-bold text-gray-900">Stardew Library</h1>
           <p class="text-gray-500 my-2">Welcome to your personal study space</p>
         </div>
 

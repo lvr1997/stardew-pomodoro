@@ -13,34 +13,20 @@
   <!-- Session State: Show when session exists -->
   <div v-else class="flex flex-col h-full bg-white">
     <!-- Header -->
-    <div class="p-4 border-b border-gray-200">
-      <h2 class="text-lg font-bold text-gray-900">Active Session</h2>
+    <div class="flex items-center justify-between p-4 border-b border-gray-200">
+      <h2 class="text-lg font-bold text-gray-900"> {{ sessionStore.currentSession?.name }}</h2>
+      <p>
+        <span class="i-tabler-pencil mr-1" @click="openEditDialog"/>
+        <span class="i-tabler-trash text-red-500" @click="handleDeleteSession"  />
+      </p>
     </div>
 
     <!-- Session Info -->
     <div class="flex-1 overflow-y-auto p-4">
       <div class="bg-blue-500 text-white rounded-lg p-4">
-        <p class="font-semibold text-lg">{{ sessionStore.currentSession?.name }}</p>
+        <p class="font-semibold text-lg"></p>
         <p class="text-blue-100 text-sm mt-2">{{ sessionStore.currentSession?.focusTime }} min</p>
       </div>
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="p-4 border-t border-gray-200 space-y-2">
-      <button
-        @click="openEditDialog"
-        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition text-sm"
-      >
-        <span class="i-tabler-pencil w-4 h-4 inline-block mr-2" />
-        Edit Session
-      </button>
-      <button
-        @click="handleDeleteSession"
-        class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition text-sm"
-      >
-        <span class="i-tabler-trash w-4 h-4 inline-block mr-2" />
-        Delete Session
-      </button>
     </div>
   </div>
 
