@@ -2,7 +2,7 @@
 import Popover from '@/components/common/Popover.vue';
 import Memos from '@/components/Memos.vue';
 import Pomodoro from '@/components/Pomodoro.vue';
-import TodoPanel from '@/components/TodoPanel.vue';
+import TodoList from '@/components/TodoList.vue';
 import Settings from '@/components/Settings.vue';
 import { useMemoStore } from '@/stores/memo';
 import { usePomodoroStore } from '@/stores/pomodoro';
@@ -64,14 +64,12 @@ watch(() => themeStore.description, (newVal) => {
 onMounted(() => {
   // Load data from localStorage on app startup
   sessionStore.loadSession()
-  todoStore.loadTodos()
-  todoStore.loadGroups()
   memoStore.loadMemos()
 })
 </script>
 
 <template>
-  <div class="h-screen lang-zh">
+  <div class="h-screen lang-zh flex flex-col">
     <!-- Header -->
     <div class="flex justify-around items-center">
       <!-- Title -->
@@ -123,9 +121,9 @@ onMounted(() => {
     </div>
 
     <!-- Main Panel -->
-    <div class="flex flex-col md:flex-row px-6 gap-4">
+    <div class="flex flex-col md:flex-row items-start justify-center px-6 gap-4 flex-1">
       <Transition name="fade">
-        <TodoPanel 
+        <TodoList 
           v-if="visibleModules.todos" 
           class="flex-1 md:flex-1"
         />

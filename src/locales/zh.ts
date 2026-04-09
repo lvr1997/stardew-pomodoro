@@ -17,6 +17,7 @@ export default {
       exitFullscreen: '退出全屏',
     },
     pomodoro: {
+      title: '番茄钟',
       focus: '番茄钟',
       short: '短休',
       long: '长休',
@@ -26,10 +27,9 @@ export default {
       autoStart: '自动开始休息'
     },
     todos: {
-      title: '任务列表',
+      title: '待办事项',
       empty: '还没有任务哦',
       task: '新建任务',
-      group: '新建任务组'
     },
     memos: {
       title: '备忘录',

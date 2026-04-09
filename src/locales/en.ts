@@ -17,6 +17,7 @@ export default {
       exitFullscreen: 'Exit Fullscreen'
     },
     pomodoro: {
+      title: 'Pomodoro Timer',
       focus: 'Pomodoro',
       short: 'Short Break',
       long: 'Long Break',
@@ -27,9 +28,8 @@ export default {
     },
     todos: {
       title: 'Todos',
-      empty: 'No groups yet - Create one first',
+      empty: 'No tasks yet - Create one first',
       task: 'New Task',
-      group: 'New Group'
     },
     memos: {
       title: 'Memos',

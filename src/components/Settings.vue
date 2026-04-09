@@ -84,7 +84,7 @@ document.addEventListener('fullscreenchange', updateFullscreenState)
     <div>
       <p class="text-sm mb-2">{{ $t('settings.titleLabel') }}</p>
       <input
-        class="py-1 pl-3 pr-10 input"
+        class="py-1 pl-3 pr-10 input-base"
         v-model="themeStore.title"
       />
     </div>
@@ -92,7 +92,7 @@ document.addEventListener('fullscreenchange', updateFullscreenState)
     <div>
       <p class="text-sm mb-2">{{ $t('settings.descriptionLabel') }}</p>
       <textarea
-        class="py-1 pl-3 pr-10 input resize-none"
+        class="py-1 pl-3 pr-10 input-base resize-none"
         v-model="themeStore.description"
         rows="3"
       />

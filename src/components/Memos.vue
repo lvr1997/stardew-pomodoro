@@ -123,10 +123,10 @@ const handleKeydown = (e: KeyboardEvent) => {
 </script>
 
 <template>
-  <div class="flex flex-col h-64 w-64 rounded-lg border bg-[#d4a574] text-[var(--color-text)] border-[#8b6914] shadow-lg overflow-hidden">
+  <div class="w-full flex flex-col min-h-300px">
     <!-- Header -->
-    <div class="flex items-center justify-between px-3 py-2 bg-[#c49a6c] border-b border-[#8b6914]">
-      <h2 class="text-sm font-bold text-white flex items-center gap-1">
+    <div class="panel-header flex items-center justify-between">
+      <h2 class="text-sm font-bold text-text flex items-center gap-1">
         <i class="i-pixelarticons:notes w-4 h-4" />
         {{ t('memos.title') }}
       </h2>
@@ -152,10 +152,7 @@ const handleKeydown = (e: KeyboardEvent) => {
     </div>
 
     <!-- Board View - 便签墙 -->
-    <div
-      v-if="viewMode === 'board'"
-      class="flex-1 overflow-y-auto p-3"
-    >
+    <div v-if="viewMode === 'board'" class="panel flex-1 p-3">
       <!-- Empty State -->
       <div v-if="sortedMemos.length === 0" class="flex flex-col items-center justify-center h-full text-white/70">
         <i class="i-tabler-notes-off w-12 h-12 mb-2 opacity-50" />
@@ -198,10 +195,7 @@ const handleKeydown = (e: KeyboardEvent) => {
     </div>
 
     <!-- Detail View - 便签详情 -->
-    <div
-      v-else-if="viewMode === 'detail' && selectedMemo"
-      class="flex flex-col flex-1 bg-[#fef9e7]"
-    >
+    <div v-else-if="viewMode === 'detail' && selectedMemo" class="panel flex-1 flex flex-col">
       <!-- 日期显示 -->
       <div class="px-3 py-1 bg-[#f5e6c8] border-b border-[#e5d5b0]">
         <p class="text-[10px] text-gray-500">
