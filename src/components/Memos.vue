@@ -132,22 +132,21 @@ const boardRef = useTemplateRef<HTMLElement>('boardRef')
   >
     <!-- Board View - 便签墙 -->
     <div v-if="viewMode === 'board'" class="flex flex-col items-center bg-transparent h-full">
-      <!-- 新建按钮 - 右上角 -->
+      <!-- 新建按钮 - 右下角 -->
       <button
         @click="createNewMemo"
         class="absolute bottom-3 right-2 p-2 bg-primary hover:bg-primary text-white rounded-full shadow-md transition z-10"
         title="新建便签"
       >
-        <i class="i-pixelarticons:plus w-5 h-5" />
+        <i class="i-pixelarticons:plus" />
       </button>
 
       <!-- Empty State -->
-      <div v-if="sortedMemos.length === 0" class="flex flex-col items-center justify-center text-text/70 bg-transparent flex-1">
-        <i class="i-tabler-notes-off w-12 h-12 mb-2 opacity-50" />
-        <p class="text-xs">{{ t('memos.empty') }}</p>
+      <div v-if="sortedMemos.length === 0" class="flex flex-col items-center justify-center text-white bg-transparent flex-1">
+        <p class="my-3">{{ t('memos.empty') }}</p>
         <button
           @click="createNewMemo"
-          class="mt-3 px-3 py-1 bg-primary/80 hover:bg-primary text-white text-xs rounded transition"
+          class="px-3 py-1 bg-primary/80 hover:bg-primary text-white rounded transition"
         >
           {{ t('memos.create') }}
         </button>
@@ -175,7 +174,7 @@ const boardRef = useTemplateRef<HTMLElement>('boardRef')
       <div class="flex-1 flex flex-col items-center justify-center p-6" :style="{ backgroundImage: `url(${LetterBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }">
         <!-- 日期显示 -->
         <div class="w-full mb-2 bg-transparent">
-          <p class="text-[10px] text-gray-600">
+          <p class="text-sm text-gray-600">
             {{ formatFullDate(selectedMemo.createdAt) }}
           </p>
         </div>
@@ -183,7 +182,7 @@ const boardRef = useTemplateRef<HTMLElement>('boardRef')
         <!-- 编辑框 -->
         <textarea
           v-model="editContent"
-          class="w-full flex-1 p-3 text-xs text-gray-800 bg-transparent border-none resize-none focus:outline-none placeholder:text-gray-500/70"
+          class="w-full flex-1 p-3 text-sm text-gray-800 bg-transparent border-none resize-none focus:outline-none placeholder:text-gray-500/70"
           :placeholder="t('memos.placeholder')"
           autofocus
           @keydown="handleKeydown"
@@ -196,18 +195,18 @@ const boardRef = useTemplateRef<HTMLElement>('boardRef')
             class="text-red-500 hover:opacity-80 transition bg-transparent"
             title="删除"
           >
-            <i class="i-pixelarticons:trash w-4 h-4" />
+            <i class="i-pixelarticons:trash" />
           </button>
           <div class="flex items-center gap-2">
             <button
               @click="backToBoard"
-              class="px-2 py-1 text-xs text-gray-600 hover:bg-white/30 rounded transition"
+              class="px-2 py-1 text-sm text-gray-600 hover:bg-white/30 rounded transition"
             >
               {{ t('memos.cancel') }}
             </button>
             <button
               @click="saveMemo"
-              class="px-3 py-1 text-xs bg-primary text-white hover:bg-hover rounded transition"
+              class="px-3 py-1 text-sm bg-primary text-white hover:bg-hover rounded transition"
             >
               {{ t('memos.save') }}
             </button>
