@@ -21,9 +21,9 @@ const isSingleModuleMode = () => isMobile() || isTabletPortrait()
 
 // 控制三个模块的显示/隐藏
 const visibleModules = ref({
-  todos: !isMobile(), // PC端默认显示，移动端隐藏
-  pomodoro: true, // 始终默认显示
-  memos: !isMobile() // PC端默认显示，移动端隐藏
+  todos: false, // PC端默认显示，移动端隐藏
+  pomodoro: false, // 始终默认显示
+  memos: true // PC端默认显示，移动端隐藏
 })
 
 const toggleModule = (module: 'todos' | 'pomodoro' | 'memos') => {
@@ -121,24 +121,15 @@ onMounted(() => {
     </div>
 
     <!-- Main Panel -->
-    <div class="flex flex-col md:flex-row items-start justify-center px-6 gap-4 flex-1">
+    <div class="px-6 max-w-lg mx-auto w-full flex flex-col gap-4" style="min-height: 320px;">
       <Transition name="fade">
-        <TodoList 
-          v-if="visibleModules.todos" 
-          class="flex-1 md:flex-1"
-        />
+        <TodoList v-if="visibleModules.todos" />
       </Transition>
       <Transition name="fade">
-        <Pomodoro 
-          v-if="visibleModules.pomodoro" 
-          class="flex-1 md:flex-[1.5]"
-        />
+        <Pomodoro v-if="visibleModules.pomodoro" />
       </Transition>
       <Transition name="fade">
-        <Memos 
-          v-if="visibleModules.memos" 
-          class="flex-1 md:flex-1"
-        />
+        <Memos v-if="visibleModules.memos" />
       </Transition>
     </div>
 

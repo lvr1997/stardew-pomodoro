@@ -1,4 +1,4 @@
-import { defineConfig, presetIcons, presetMini } from 'unocss'
+import { defineConfig, presetIcons, presetWind3 } from 'unocss'
 
 export default defineConfig({
   theme: {
@@ -37,10 +37,10 @@ export default defineConfig({
     'input-base': 'cursor-pointer rounded-sm border-2 border-solid border-border bg-primary text-text text-left hover:bg-hover hover:border-hover-border focus:outline-none focus:bg-focus focus:border-focus-border disabled:bg-disabled disabled:border-disabled-border disabled:text-text-muted disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm',
     'panel': 'rounded-sm border-2 border-solid border-border bg-secondary overflow-hidden',
     'panel-header': 'py-3 px-4 border-border',
-    'panel-content': 'flex-1 overflow-y-auto p-3'
+    // 'panel-content': 'flex-1 overflow-y-auto p-3'
   },
   presets: [
-    presetMini(),
+    presetWind3(),
     presetIcons({
       extraProperties: {
         'display': 'inline-block',
