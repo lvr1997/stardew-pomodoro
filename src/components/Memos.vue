@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, reactive, useTemplateRef } from 'vue'
+import { computed, nextTick, onMounted, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useMemoStore, type Memo } from '../stores/memo'
 import MemosBg from '@/assets/themes/Memos_bg.png'
@@ -8,6 +8,13 @@ import MemoItem from './MemoItem.vue'
 
 const { t } = useI18n()
 const memoStore = useMemoStore()
+
+const MEMO_WIDTH = 144
+const MEMO_HEIGHT = 112
+const MEMO_GAP = 14
+const BOARD_PADDING = 16
+const RANDOM_ATTEMPTS = 40
+const SCAN_STEP = 24
 
 // State
 const viewMode = ref<'board' | 'detail'>('board')
@@ -19,19 +26,6 @@ const sortedMemos = computed(() => {
   return memoStore.getAllMemos()
 })
 
-// 格式化日期
-const formatDate = (timestamp: number): string => {
-  const date = new Date(timestamp)
-  const now = new Date()
-  const isToday = date.toDateString() === now.toDateString()
-
-  if (isToday) {
-    return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-  }
-  return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
-}
-
-// 格式化完整日期
 const formatFullDate = (timestamp: number): string => {
   const date = new Date(timestamp)
   return date.toLocaleString('zh-CN', {
@@ -43,51 +37,105 @@ const formatFullDate = (timestamp: number): string => {
   })
 }
 
-// 获取预览文本（前20个字符）
-const getPreview = (content: string): string => {
-  const lines = content.split('\n')
-  const firstLine = lines[0] || ''
-  if (firstLine.length > 20) {
-    return firstLine.slice(0, 20) + '...'
-  }
-  return firstLine || '(空白便签)'
-}
-
-// 切换到详情视图
 const openDetail = (memo: Memo) => {
   selectedMemo.value = memo
   editContent.value = memo.content
   viewMode.value = 'detail'
 }
 
-// 返回便签墙
 const backToBoard = () => {
   viewMode.value = 'board'
   selectedMemo.value = null
   editContent.value = ''
 }
 
-// 创建新便签
+const isMemoOverlapping = (
+  candidate: { x: number; y: number },
+  existingMemos: Memo[],
+  ignoreMemoId?: string
+) => {
+  return existingMemos.some((memo) => {
+    if (memo.id === ignoreMemoId) return false
+    if (typeof memo.x !== 'number' || typeof memo.y !== 'number') return false
+
+    return !(
+      candidate.x + MEMO_WIDTH + MEMO_GAP <= memo.x ||
+      candidate.x >= memo.x + MEMO_WIDTH + MEMO_GAP ||
+      candidate.y + MEMO_HEIGHT + MEMO_GAP <= memo.y ||
+      candidate.y >= memo.y + MEMO_HEIGHT + MEMO_GAP
+    )
+  })
+}
+
+const containerRef = useTemplateRef<HTMLElement>('containerRef')
+const boardRef = useTemplateRef<HTMLElement>('boardRef')
+
+const getBoardBounds = () => {
+  const container = boardRef.value ?? containerRef.value
+  const width = Math.max(MEMO_WIDTH + BOARD_PADDING * 2, (container?.clientWidth ?? 720) - BOARD_PADDING * 2)
+  const height = Math.max(MEMO_HEIGHT + BOARD_PADDING * 2, (container?.clientHeight ?? 420) - BOARD_PADDING * 2)
+
+  return {
+    maxX: Math.max(BOARD_PADDING, width - MEMO_WIDTH),
+    maxY: Math.max(BOARD_PADDING, height - MEMO_HEIGHT),
+  }
+}
+
+const generateMemoPosition = (ignoreMemoId?: string) => {
+  const bounds = getBoardBounds()
+  const existingMemos = sortedMemos.value
+
+  for (let attempt = 0; attempt < RANDOM_ATTEMPTS; attempt += 1) {
+    const candidate = {
+      x: BOARD_PADDING + Math.random() * Math.max(0, bounds.maxX - BOARD_PADDING),
+      y: BOARD_PADDING + Math.random() * Math.max(0, bounds.maxY - BOARD_PADDING),
+    }
+
+    if (!isMemoOverlapping(candidate, existingMemos, ignoreMemoId)) {
+      return {
+        x: Math.round(candidate.x),
+        y: Math.round(candidate.y),
+      }
+    }
+  }
+
+  for (let y = BOARD_PADDING; y <= bounds.maxY; y += SCAN_STEP) {
+    for (let x = BOARD_PADDING; x <= bounds.maxX; x += SCAN_STEP) {
+      const candidate = { x, y }
+      if (!isMemoOverlapping(candidate, existingMemos, ignoreMemoId)) {
+        return candidate
+      }
+    }
+  }
+
+  return { x: BOARD_PADDING, y: BOARD_PADDING }
+}
+
+const ensureMemoPositions = () => {
+  for (const memo of sortedMemos.value) {
+    if (typeof memo.x !== 'number' || typeof memo.y !== 'number') {
+      memoStore.updateMemoPosition(memo.id, generateMemoPosition(memo.id))
+    }
+  }
+}
+
 const createNewMemo = () => {
-  const newMemo = memoStore.addMemo('')
+  const newMemo = memoStore.addMemo('', generateMemoPosition())
   openDetail(newMemo)
 }
 
-// 保存便签
 const saveMemo = () => {
   if (selectedMemo.value) {
     const content = editContent.value.trim()
     if (content) {
       memoStore.updateMemo(selectedMemo.value.id, editContent.value)
     } else {
-      // 如果内容为空，删除便签
       memoStore.deleteMemo(selectedMemo.value.id)
     }
   }
   backToBoard()
 }
 
-// 删除便签
 const deleteMemo = () => {
   if (selectedMemo.value) {
     memoStore.deleteMemo(selectedMemo.value.id)
@@ -95,44 +143,34 @@ const deleteMemo = () => {
   }
 }
 
-// 处理按键事件
 const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Escape') {
     saveMemo()
   }
 }
 
-// 为每个便签生成随机初始位置（缓存避免重复生成）
-const memoPositions = reactive<Record<string, { x: number; y: number }>>({})
-const getMemoPosition = (memoId: string, index: number) => {
-  if (!memoPositions[memoId]) {
-    const cols = 6
-    const col = index % cols
-    const row = Math.floor(index / cols)
-    const baseX = 15 + col * 85 + (Math.random() - 0.5) * 15
-    const baseY = 15 + row * 70 + (Math.random() - 0.5) * 10
-    memoPositions[memoId] = { x: baseX, y: baseY }
-  }
-  return memoPositions[memoId]
-}
-
-// 处理便签点击
 const handleMemoClick = (memo: Memo) => {
   openDetail(memo)
 }
 
-// 便签墙容器引用
-const boardRef = useTemplateRef<HTMLElement>('boardRef')
+const handleMemoPositionChange = (memoId: string, position: { x: number; y: number }) => {
+  memoStore.updateMemoPosition(memoId, position)
+}
+
+onMounted(() => {
+  nextTick(() => {
+    ensureMemoPositions()
+  })
+})
 </script>
 
 <template>
-  <div 
+  <div
+    ref="containerRef"
     class="w-full h-full min-h-[380px] bg-cover bg-center border-solid rounded-md overflow-hidden relative"
     :style="{ backgroundImage: `url(${MemosBg})`, borderWidth: '16px', borderColor: '#402202' }"
   >
-    <!-- Board View - 便签墙 -->
     <div v-if="viewMode === 'board'" class="flex flex-col items-center bg-transparent h-full">
-      <!-- 新建按钮 - 右下角 -->
       <button
         @click="createNewMemo"
         class="absolute bottom-3 right-2 p-2 bg-primary hover:bg-primary text-white rounded-full shadow-md transition z-10"
@@ -141,7 +179,6 @@ const boardRef = useTemplateRef<HTMLElement>('boardRef')
         <i class="i-pixelarticons:plus" />
       </button>
 
-      <!-- Empty State -->
       <div v-if="sortedMemos.length === 0" class="flex flex-col items-center justify-center text-white bg-transparent flex-1">
         <p class="my-3">{{ t('memos.empty') }}</p>
         <button
@@ -152,34 +189,31 @@ const boardRef = useTemplateRef<HTMLElement>('boardRef')
         </button>
       </div>
 
-      <!-- Memo Grid - 便签墙 -->
       <div v-else ref="boardRef" class="w-full flex-1 relative overflow-y-auto">
         <MemoItem
-          v-for="(memo, index) in sortedMemos"
+          v-for="memo in sortedMemos"
           :key="memo.id"
           :memo="memo"
-          :initial-x="getMemoPosition(memo.id, index).x"
-          :initial-y="getMemoPosition(memo.id, index).y"
+          :initial-x="memo.x"
+          :initial-y="memo.y"
           :container-element="boardRef"
+          @position-change="handleMemoPositionChange(memo.id, $event)"
           @click="handleMemoClick(memo)"
         />
       </div>
-
     </div>
 
-    <!-- Detail View - 便签详情 -->
     <div v-else-if="viewMode === 'detail' && selectedMemo" class="flex flex-col p-4 bg-transparent h-full">
-
-      <!-- 编辑区域 - 居中，使用信纸背景 -->
-      <div class="flex-1 flex flex-col items-center justify-center p-6" :style="{ backgroundImage: `url(${LetterBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }">
-        <!-- 日期显示 -->
+      <div
+        class="flex-1 flex flex-col items-center justify-center p-6"
+        :style="{ backgroundImage: `url(${LetterBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }"
+      >
         <div class="w-full mb-2 bg-transparent">
           <p class="text-sm text-gray-600">
             {{ formatFullDate(selectedMemo.createdAt) }}
           </p>
         </div>
 
-        <!-- 编辑框 -->
         <textarea
           v-model="editContent"
           class="w-full flex-1 p-3 text-sm text-gray-800 bg-transparent border-none resize-none focus:outline-none placeholder:text-gray-500/70"
@@ -188,7 +222,6 @@ const boardRef = useTemplateRef<HTMLElement>('boardRef')
           @keydown="handleKeydown"
         />
 
-        <!-- 底部操作栏 -->
         <div class="w-full flex items-center justify-between mt-2 bg-transparent">
           <button
             @click="deleteMemo"
@@ -218,7 +251,6 @@ const boardRef = useTemplateRef<HTMLElement>('boardRef')
 </template>
 
 <style scoped>
-/* 自定义滚动条样式 */
 ::-webkit-scrollbar {
   width: 4px;
 }
@@ -234,13 +266,5 @@ const boardRef = useTemplateRef<HTMLElement>('boardRef')
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(139, 105, 20, 0.5);
-}
-
-/* 多行文本截断 */
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 </style>

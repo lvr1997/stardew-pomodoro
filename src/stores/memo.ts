@@ -6,6 +6,8 @@ export interface Memo {
   content: string
   createdAt: number
   updatedAt: number
+  x: number
+  y: number
 }
 
 export const useMemoStore = defineStore('memo', () => {
@@ -13,13 +15,15 @@ export const useMemoStore = defineStore('memo', () => {
   const memos = useLocalStorage<Memo[]>('memos', [])
 
   // 添加备忘录
-  const addMemo = (content: string): Memo => {
+  const addMemo = (content: string, position: { x: number; y: number }): Memo => {
     const now = Date.now()
     const newMemo: Memo = {
       id: now.toString(),
       content,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      x: position.x,
+      y: position.y,
     }
     memos.value.unshift(newMemo)
     // useLocalStorage auto-saves
@@ -33,6 +37,14 @@ export const useMemoStore = defineStore('memo', () => {
       memo.content = content
       memo.updatedAt = Date.now()
       // useLocalStorage auto-saves
+    }
+  }
+
+  const updateMemoPosition = (id: string, position: { x: number; y: number }) => {
+    const memo = memos.value.find(m => m.id === id)
+    if (memo) {
+      memo.x = position.x
+      memo.y = position.y
     }
   }
 
@@ -61,6 +73,7 @@ export const useMemoStore = defineStore('memo', () => {
     memos,
     addMemo,
     updateMemo,
+    updateMemoPosition,
     deleteMemo,
     getAllMemos,
     loadMemos,

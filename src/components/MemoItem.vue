@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useTemplateRef } from 'vue'
 import { useDraggable } from '@vueuse/core'
+import { useTemplateRef } from 'vue'
 import LetterBg from '@/assets/themes/letterBG.png'
 import TagIcon from '@/assets/icons/tag.png'
 import type { Memo } from '../stores/memo'
@@ -14,6 +14,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   click: [memo: Memo]
+  positionChange: [position: { x: number; y: number }]
 }>()
 
 const cardRef = useTemplateRef<HTMLElement>('cardRef')
@@ -21,18 +22,20 @@ const handleRef = useTemplateRef<HTMLElement>('handleRef')
 
 const rotate = (Math.random() - 0.5) * 16
 
-// 严格按照官方文档：useDraggable 返回 style 直接绑定
-// containerElement 传 getter 函数，延迟求值避免 setup 阶段父 ref 还未挂载为 null
-const { x, y, style } = useDraggable(cardRef, {
+const { style } = useDraggable(cardRef, {
   handle: handleRef,
   initialValue: { x: props.initialX, y: props.initialY },
   containerElement: () => props.containerElement,
   restrictInView: true,
+  onEnd: (position) => {
+    emit('positionChange', {
+      x: Math.round(position.x),
+      y: Math.round(position.y),
+    })
+  },
 })
 
-// 拖拽与点击隔离：click 事件中检查是否来自 handle 或刚拖拽过
 const handleClick = (e: MouseEvent) => {
-  // 点击图钉区域不触发编辑
   if (handleRef.value && handleRef.value.contains(e.target as Node)) return
   emit('click', props.memo)
 }
@@ -109,12 +112,12 @@ const getPreview = (content: string): string => {
   background: inherit;
   background-size: cover;
   background-position: bottom;
-  filter: drop-shadow(0 8px 15px rgba(0,0,0,0.15));
+  filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.15));
   clip-path: polygon(
-    0% 0%, 100% 0%, 100% 82%, 
-    97% 88%, 92% 76%, 88% 91%, 82% 78%, 77% 95%, 
-    72% 81%, 66% 98%, 61% 75%, 54% 92%, 49% 79%, 
-    43% 96%, 36% 83%, 30% 94%, 24% 77%, 18% 98%, 
+    0% 0%, 100% 0%, 100% 82%,
+    97% 88%, 92% 76%, 88% 91%, 82% 78%, 77% 95%,
+    72% 81%, 66% 98%, 61% 75%, 54% 92%, 49% 79%,
+    43% 96%, 36% 83%, 30% 94%, 24% 77%, 18% 98%,
     11% 80%, 5% 93%, 0% 74%
   );
 }
