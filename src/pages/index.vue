@@ -1,13 +1,12 @@
 <script lang="ts" setup>
 import Popover from '@/components/common/Popover.vue';
+import BingoTodo from '@/components/BingoTodo.vue';
 import Memos from '@/components/Memos.vue';
 import Pomodoro from '@/components/Pomodoro.vue';
-import TodoList from '@/components/TodoList.vue';
 import Settings from '@/components/Settings.vue';
 import { useMemoStore } from '@/stores/memo';
 import { usePomodoroStore } from '@/stores/pomodoro';
 import { useThemeStore } from '@/stores/theme';
-import { useTodoStore } from '@/stores/todolist';
 import { onMounted, ref, watch } from 'vue';
 
 // 检查设备类型和方向
@@ -41,7 +40,6 @@ const toggleModule = (module: 'todos' | 'pomodoro' | 'memos') => {
 }
 
 const sessionStore = usePomodoroStore()
-const todoStore = useTodoStore()
 const memoStore = useMemoStore()
 const themeStore = useThemeStore()
 
@@ -123,7 +121,7 @@ onMounted(() => {
     <!-- Main Panel -->
     <div class="px-6 max-w-2xl mx-auto w-full flex flex-col gap-4" >
       <Transition name="fade">
-        <TodoList v-if="visibleModules.todos" />
+        <BingoTodo v-if="visibleModules.todos" />
       </Transition>
       <Transition name="fade">
         <Pomodoro v-if="visibleModules.pomodoro" />
