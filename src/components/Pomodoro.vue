@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import CheckBox from '@/components/common/CheckBox.vue';
+import TimerProgress from '@/components/TimerProgress.vue';
 import { useThemeStore } from '@/stores/theme';
 import { usePomodoroStore } from '@/stores/pomodoro';
 import { useTitle } from '@vueuse/core';
@@ -200,6 +201,11 @@ const completedCycles = computed(() => {
   return Math.min(Math.max(0, cycleCount.value), total)
 })
 
+const timerProgress = computed(() => {
+  const duration = getDurationMs(mode.value)
+  return Math.max(0, Math.min(100, ((duration - remainingMs.value) / duration) * 100))
+})
+
 watchEffect(() => {
   documentTitle.value = `${timeLabel.value} | ${isRunning.value ? 'Running' : 'Pause'}`
 })
@@ -235,12 +241,19 @@ onUnmounted(() => {
         </button>
       </div>
 
-      <div class="relative flex h-72 w-72 items-center justify-center rounded-full bg-white/20 ring-8 ring-primary/30">
-        <div class="text-6xl font-semibold text-text tracking-widest select-none"
+       <div class="text-6xl font-semibold text-center tracking-widest select-none"
           @click="isRunning ? pauseTimer() : startTimer()">
           {{ timeLabel }}
         </div>
-      </div>
+
+      <!-- Timer Progress Bar with Junimo -->
+      <TimerProgress 
+        :value="timerProgress"
+        :show-junimo="true"
+        :junimo-follows-progress="true"
+      />
+
+     
 
       <div class="flex flex-col items-center gap-4">
         <div class="flex items-center gap-2 text-sm text-gray-500">
