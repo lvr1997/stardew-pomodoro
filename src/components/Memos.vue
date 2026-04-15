@@ -165,15 +165,19 @@ onMounted(() => {
 </script>
 
 <template>
+   <!-- <div
+    ref="containerRef"
+    class="mt-3 sm:mt-9 w-2xl h-full max-h-[380px] mx-auto bg-backdrop border-solid rounded-3xl overflow-hidden relative"
+  > -->
   <div
     ref="containerRef"
-    class="mt-3 sm:mt-9 w-2xl h-full min-h-[380px] mx-auto bg-cover bg-center border-solid rounded-md overflow-hidden relative"
+    class="mt-3 sm:mt-9 w-2xl h-full max-h-[380px] mx-auto bg-cover bg-center border-solid rounded-md overflow-hidden relative"
     :style="{ backgroundImage: `url(${MemosBg})`, borderWidth: '16px', borderColor: '#402202' }"
   >
     <div v-if="viewMode === 'board'" class="flex flex-col items-center bg-transparent h-full">
       <button
         @click="createNewMemo"
-        class="absolute bottom-0 right-3 p-2 bg-primary hover:bg-primary text-white rounded-full shadow-md transition z-10"
+        class="absolute bottom-0 right-3 p-2 bg-primary text-white rounded-full shadow-md transition z-10"
         :title="t('memos.create')"
       >
         <i class="i-pixelarticons:plus" />
@@ -210,7 +214,7 @@ onMounted(() => {
 
         <textarea
           v-model="editContent"
-          class="w-full flex-1 p-3 text-sm text-gray-800 bg-transparent border-none resize-none focus:outline-none placeholder:text-gray-500/70"
+          class="w-full min-h-30 flex-1 p-4 text-base text-[#444] bg-transparent border-none resize-none outline-none box-border"
           :placeholder="t('memos.placeholder')"
           autofocus
           @keydown="handleKeydown"

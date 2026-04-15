@@ -18,7 +18,7 @@ const isSingleModuleMode = () => isMobile() || isTabletPortrait()
 
 // 控制三个模块的显示/隐藏
 const visibleModules = ref({
-  pomodoro: false, 
+  pomodoro: true, 
   memos: true
 })
 
@@ -50,14 +50,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen justify-top px-8 py-4 sm:py-8 relative">
+  <div class="h-screen px-8 py-4 sm:py-8 relative">
     <AppHeader
       :visible-modules="visibleModules"
       @toggle="toggleModule"
     />
 
     <!-- Main Panel -->
-    <div class="px-6 w-full flex flex-col gap-4" >
+    <div class="px-6 mx-auto w-full h-full flex items-top gap-4" >
       <Transition name="fade">
         <Pomodoro v-if="visibleModules.pomodoro" />
       </Transition>

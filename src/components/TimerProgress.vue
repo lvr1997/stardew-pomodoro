@@ -101,7 +101,7 @@ const junimoStyle = computed(() => {
 
 .junimo-wrapper {
   position: absolute;
-  top: 50%;
+  top: 0;
   transform: translateY(-50%);
   transition: left 200ms ease-out;
   z-index: 2;

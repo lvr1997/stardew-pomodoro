@@ -1,8 +1,8 @@
 export default {
   settings: {
     title: '设置',
-    general: '应用设置',
-    pomodoro: '番茄计时器',
+    general: '偏好设置',
+    pomodoro: '计时器设置',
     theme: '主题模式',
     language: '语言',
     font: '字体',
@@ -17,7 +17,6 @@ export default {
     seasonEffects: '季节特效',
     fullscreen: '全屏模式',
     exitFullscreen: '退出全屏',
-    pomodoroTitle: '番茄钟设置',
   },
   pomodoro: {
     title: '番茄钟',

@@ -11,7 +11,10 @@ type PomodoroMode = 'focus' | 'short' | 'long'
 
 const mode = ref<PomodoroMode>('focus')
 const remainingMs = ref(25 * 60 * 1000)
-const isRunning = ref(false)
+const isRunning = computed({
+  get: () => pomodoroStore.isRunning,
+  set: (val: boolean) => { pomodoroStore.isRunning = val }
+})
 const cycleCount = ref(0)
 const { t } = useI18n()
 const themeStore = useThemeStore()
@@ -226,7 +229,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="w-full max-w-md mx-auto bg-backdrop p-4 rounded-3xl  mt-3 sm:mt-9">
+  <div class="w-full max-h-95 max-w-sm mx-auto bg-backdrop p-3 rounded-3xl  mt-3 sm:mt-9">
 
     <div class="flex flex-col gap-6 sm:m-6">
       <div class="flex items-center justify-center gap-3">

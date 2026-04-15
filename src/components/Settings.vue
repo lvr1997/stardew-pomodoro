@@ -6,7 +6,7 @@ import TabContent from '@/components/common/TabContent.vue';
 import { availableLocales, localeLabels } from '@/i18n';
 import { useThemeStore, type AppFont, type Theme } from '@/stores/theme';
 import { usePomodoroStore } from '@/stores/pomodoro';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 // Settings component - manages user preferences stored in userSettings
@@ -16,6 +16,20 @@ const pomodoroStore = usePomodoroStore()
 const { locale, t } = useI18n()
 
 const isFullscreenEnabled = ref(false)
+const isPomodoroRunning = computed(() => {
+  // 直接读取pinia store的isRunning状态
+  // 由于Settings和Pomodoro是分离组件，需通过localStorage同步
+  // 但更推荐用pinia全局状态
+  // 这里假设Pomodoro的isRunning是全局唯一
+  // 若不是全局唯一，需事件总线或全局store
+  // 这里直接读取store
+  try {
+    // 优先从store
+    return pomodoroStore.isRunning ?? false
+  } catch {
+    return false
+  }
+})
 
 // Tab configuration
 const tabs = [
@@ -170,7 +184,7 @@ document.addEventListener('fullscreenchange', updateFullscreenState)
             <span class="text-sm">{{ $t('pomodoro.focusMinutes') }}</span>
             <div class="flex items-center gap-2">
               <input v-model.number="pomodoroStore.settings.focusMinutes" type="number" min="1"
-                class="input-base w-16 px-2 py-1 text-center" @input="pomodoroStore.saveSettings()" />
+                class="input-base w-16 px-2 py-1 text-center" @input="pomodoroStore.saveSettings()" :disabled="isPomodoroRunning" />
               <span class="text-xs">{{ $t('pomodoro.minutes') }}</span>
             </div>
           </div>
@@ -179,7 +193,7 @@ document.addEventListener('fullscreenchange', updateFullscreenState)
             <span class="text-sm">{{ $t('pomodoro.shortMinutes') }}</span>
             <div class="flex items-center gap-2">
               <input v-model.number="pomodoroStore.settings.shortMinutes" type="number" min="1"
-                class="input-base w-16 px-2 py-1 text-center" @input="pomodoroStore.saveSettings()" />
+                class="input-base w-16 px-2 py-1 text-center" @input="pomodoroStore.saveSettings()" :disabled="isPomodoroRunning" />
               <span class="text-xs">{{ $t('pomodoro.minutes') }}</span>
             </div>
           </div>
@@ -188,7 +202,7 @@ document.addEventListener('fullscreenchange', updateFullscreenState)
             <span class="text-sm">{{ $t('pomodoro.longMinutes') }}</span>
             <div class="flex items-center gap-2">
               <input v-model.number="pomodoroStore.settings.longMinutes" type="number" min="1"
-                class="input-base w-16 px-2 py-1 text-center" @input="pomodoroStore.saveSettings()" />
+                class="input-base w-16 px-2 py-1 text-center" @input="pomodoroStore.saveSettings()" :disabled="isPomodoroRunning" />
               <span class="text-xs">{{ $t('pomodoro.minutes') }}</span>
             </div>
           </div>
@@ -197,18 +211,18 @@ document.addEventListener('fullscreenchange', updateFullscreenState)
             <span class="text-sm">{{ $t('pomodoro.cyclesBeforeLong') }}</span>
             <div class="flex items-center gap-2">
               <input v-model.number="pomodoroStore.settings.cyclesBeforeLong" type="number" min="1"
-                class="input-base w-16 px-2 py-1 text-center" @input="pomodoroStore.saveSettings()" />
+                class="input-base w-16 px-2 py-1 text-center" @input="pomodoroStore.saveSettings()" :disabled="isPomodoroRunning" />
             </div>
           </div>
 
           <div class="flex items-center justify-between">
             <p class="text-sm">{{ $t('pomodoro.autoStart') }}</p>
-            <CheckBox v-model="pomodoroStore.settings.autoSwitch" @update:model-value="pomodoroStore.saveSettings()" />
+            <CheckBox v-model="pomodoroStore.settings.autoSwitch" @update:model-value="pomodoroStore.saveSettings()" :disabled="isPomodoroRunning" />
           </div>
 
           <div class="flex items-center justify-between">
             <p class="text-sm">{{ $t('pomodoro.soundEnabled') }}</p>
-            <CheckBox v-model="pomodoroStore.settings.soundEnabled" @update:model-value="pomodoroStore.saveSettings()" />
+            <CheckBox v-model="pomodoroStore.settings.soundEnabled" @update:model-value="pomodoroStore.saveSettings()" :disabled="isPomodoroRunning" />
           </div>
         </div>
       </TabContent>

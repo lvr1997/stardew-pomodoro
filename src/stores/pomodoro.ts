@@ -107,9 +107,13 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
 
   const hasSession = computed(() => currentSession.value !== null)
 
+  // 全局运行状态（由Pomodoro.vue维护）
+  const isRunning = ref(false)
+
   return {
     currentSession,
     settings,
+    isRunning,
     createSession,
     deleteSession,
     updateSession,

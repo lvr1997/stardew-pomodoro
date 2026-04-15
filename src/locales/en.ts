@@ -1,7 +1,7 @@
 export default {
   settings: {
     title: 'Settings',
-    general: 'General',
+    general: 'Preferences',
     pomodoro: 'Timer',
     theme: 'Theme',
     language: 'Language',
