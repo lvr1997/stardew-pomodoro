@@ -4,7 +4,7 @@ import Memos from '@/components/Memos.vue';
 import Pomodoro from '@/components/Pomodoro.vue';
 import { useMemoStore } from '@/stores/memo';
 import { usePomodoroStore } from '@/stores/pomodoro';
-import { useThemeStore } from '@/stores/theme';
+import { useThemeStore } from '@/stores/settings';
 import { onMounted, ref } from 'vue';
 
 // 检查设备类型和方向
@@ -44,7 +44,7 @@ themeStore.loadSavedSettings()
 
 onMounted(() => {
   // Load data from localStorage on app startup
-  sessionStore.loadSession()
+  // sessionStore.loadSession()
   memoStore.loadMemos()
 })
 </script>

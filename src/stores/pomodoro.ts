@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { useLocalStorage } from '@vueuse/core'
 import { defineStore } from 'pinia'
 
 export interface PomodoroSession {
@@ -18,6 +19,16 @@ export interface PomodoroSettings {
   soundEnabled: boolean
 }
 
+// const DEFAULT_SETTINGS: PomodoroSettings = {
+//   focusMinutes: 25,
+//   shortMinutes: 5,
+//   longMinutes: 15,
+//   cyclesBeforeLong: 4,
+//   autoSwitch: true,
+//   soundEnabled: true
+// }
+
+
 const DEFAULT_SETTINGS: PomodoroSettings = {
   focusMinutes: 25,
   shortMinutes: 5,
@@ -27,57 +38,27 @@ const DEFAULT_SETTINGS: PomodoroSettings = {
   soundEnabled: true
 }
 
+
 const SETTINGS_STORAGE_KEY = 'pomodoroSettings'
+const SESSION_STORAGE_KEY = 'currentSession'
 
 export const usePomodoroStore = defineStore('pomodoro', () => {
-  const currentSession = ref<PomodoroSession | null>(null)
-  const settings = ref<PomodoroSettings>(DEFAULT_SETTINGS)
 
-  // 从localStorage加载数据
-  const loadSession = () => {
-    const stored = localStorage.getItem('currentSession')
-    if (stored) {
-      currentSession.value = JSON.parse(stored)
-    }
-  }
+  const currentSession = useLocalStorage<PomodoroSession | null>(SESSION_STORAGE_KEY, null)
+  const settings = useLocalStorage<PomodoroSettings>(SETTINGS_STORAGE_KEY, DEFAULT_SETTINGS)
 
-  // 加载设置
-  const loadSettings = () => {
-    const stored = localStorage.getItem(SETTINGS_STORAGE_KEY)
-    if (stored) {
-      try {
-        settings.value = { ...DEFAULT_SETTINGS, ...JSON.parse(stored) }
-      } catch {
-        settings.value = DEFAULT_SETTINGS
-      }
-    }
-  }
-
-  // 保存到localStorage
-  const saveSession = () => {
-    if (currentSession.value) {
-      localStorage.setItem('currentSession', JSON.stringify(currentSession.value))
-    } else {
-      localStorage.removeItem('currentSession')
-    }
-  }
-
-  // 保存设置
-  const saveSettings = () => {
-    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings.value))
-  }
 
   // 更新设置
   const updateSettings = (newSettings: Partial<PomodoroSettings>) => {
     settings.value = { ...settings.value, ...newSettings }
-    saveSettings()
   }
+
 
   // 重置设置
   const resetSettings = () => {
     settings.value = DEFAULT_SETTINGS
-    saveSettings()
   }
+
 
   const createSession = (name: string, focusTime: number, timerMode: 'countdown' | 'accumulate' = 'countdown') => {
     const newSession: PomodoroSession = {
@@ -88,20 +69,19 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
       createdAt: Date.now()
     }
     currentSession.value = newSession
-    saveSession()
     return newSession
   }
 
+
   const deleteSession = () => {
     currentSession.value = null
-    saveSession()
   }
+
 
   const updateSession = (name: string, focusTime: number) => {
     if (currentSession.value) {
       currentSession.value.name = name
       currentSession.value.focusTime = focusTime
-      saveSession()
     }
   }
 
@@ -118,10 +98,6 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     deleteSession,
     updateSession,
     hasSession,
-    loadSession,
-    saveSession,
-    loadSettings,
-    saveSettings,
     updateSettings,
     resetSettings
   }

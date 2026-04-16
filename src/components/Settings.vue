@@ -4,18 +4,21 @@ import Listbox from '@/components/common/Listbox.vue';
 import Tabs from '@/components/common/Tabs.vue';
 import TabContent from '@/components/common/TabContent.vue';
 import { availableLocales, localeLabels } from '@/i18n';
-import { useThemeStore, type AppFont, type Theme } from '@/stores/theme';
+import { useThemeStore, type AppFont, type Theme } from '@/stores/settings';
 import { usePomodoroStore } from '@/stores/pomodoro';
 import { ref, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useToastStore } from '@/stores/toast';
 
 // Settings component - manages user preferences stored in userSettings
 
 const themeStore = useThemeStore()
 const pomodoroStore = usePomodoroStore()
+const toast = useToastStore()
 const { locale, t } = useI18n()
 
 const isFullscreenEnabled = ref(false)
+const showSaveConfirm = ref(false)
 const isPomodoroRunning = computed(() => {
   // 直接读取pinia store的isRunning状态
   // 由于Settings和Pomodoro是分离组件，需通过localStorage同步
@@ -39,7 +42,6 @@ const tabs = [
 
 // Initialize settings from store
 themeStore.loadSavedSettings()
-pomodoroStore.loadSettings()
 
 // Sync i18n locale with store
 locale.value = themeStore.currentLanguage
@@ -99,6 +101,12 @@ watch(selectedFont, (next) => {
   }
 })
 
+const savePomodoroSettings = () => {
+  // Settings are automatically saved via localStorage by pinia
+  // Just show confirmation
+  toast.show(t('settings.saved'))
+}
+
 const toggleFullscreen = async () => {
   if (!document.fullscreenElement) {
     await document.documentElement.requestFullscreen()
@@ -123,56 +131,37 @@ document.addEventListener('fullscreenchange', updateFullscreenState)
     <Tabs :tabs="tabs">
       <!-- General Settings Tab -->
       <TabContent value="general">
-        <div class="space-y-6">
+
+        <!-- General Toggle Controls -->
+        <div class="space-y-4">
           <div class="flex items-center justify-between">
             <p class="text-sm mb-2">{{ $t('settings.titleLabel') }}</p>
-            <input
-              class="p-1 input-base"
-              v-model="themeStore.title"
-            />
+            <input class="p-1 input-base" v-model="themeStore.title" />
           </div>
 
-          <!-- General Toggle Controls -->
-          <div class="space-y-4">
-            <div class="flex items-center justify-between">
-              <p class="text-sm">{{ $t('settings.theme') }}</p>
-              <Listbox v-model="selectedTheme" :options="themeOptions" />
-            </div>
+          <div class="flex items-center justify-between">
+            <p class="text-sm">{{ $t('settings.theme') }}</p>
+            <Listbox v-model="selectedTheme" :options="themeOptions" />
+          </div>
 
-            <div class="flex items-center justify-between">
-              <p class="text-sm">{{ $t('settings.language') }}</p>
-              <Listbox v-model="selectedLanguage" :options="languageOptions" />
-            </div>
+          <div class="flex items-center justify-between">
+            <p class="text-sm">{{ $t('settings.language') }}</p>
+            <Listbox v-model="selectedLanguage" :options="languageOptions" />
+          </div>
 
-            <div class="flex items-center justify-between">
-              <p class="text-sm">{{ $t('settings.font') }}</p>
-              <Listbox v-model="selectedFont" :options="fontOptions" />
-            </div>
+          <div class="flex items-center justify-between">
+            <p class="text-sm">{{ $t('settings.font') }}</p>
+            <Listbox v-model="selectedFont" :options="fontOptions" />
+          </div>
 
-            <div class="flex items-center justify-between">
-              <p class="text-sm">{{ $t('settings.music') }}</p>
-              <CheckBox v-model="themeStore.isMusicEnabled" />
-            </div>
+          <div class="flex items-center justify-between">
+            <p class="text-sm">{{ $t('settings.music') }}</p>
+            <CheckBox v-model="themeStore.isMusicEnabled" />
+          </div>
 
-            <div class="flex items-center justify-between">
-              <p class="text-sm">{{ $t('settings.soundEffects') }}</p>
-              <CheckBox v-model="themeStore.isSoundEffectsEnabled" />
-            </div>
-
-            <div class="flex items-center justify-between">
-              <p class="text-sm">{{ $t('settings.seasonEffects') }}</p>
-              <CheckBox v-model="themeStore.areSeasonEffectsEnabled" />
-            </div>
-
-            <div class="flex items-center justify-between">
-              <button
-                @click="toggleFullscreen"
-                class="btn-primary"
-                :aria-pressed="isFullscreenEnabled"
-              >
-                {{ isFullscreenEnabled ? $t('settings.exitFullscreen') : $t('settings.fullscreen') }}
-              </button>
-            </div>
+          <div class="flex items-center justify-between">
+            <p class="text-sm">{{ $t('settings.fullscreen') }}</p>
+            <CheckBox v-model="isFullscreenEnabled" @change="toggleFullscreen" />
           </div>
         </div>
       </TabContent>
@@ -184,7 +173,7 @@ document.addEventListener('fullscreenchange', updateFullscreenState)
             <span class="text-sm">{{ $t('pomodoro.focusMinutes') }}</span>
             <div class="flex items-center gap-2">
               <input v-model.number="pomodoroStore.settings.focusMinutes" type="number" min="1"
-                class="input-base w-16 px-2 py-1 text-center" @input="pomodoroStore.saveSettings()" :disabled="isPomodoroRunning" />
+                class="input-base w-16 px-2 py-1 text-center" :disabled="isPomodoroRunning" />
               <span class="text-xs">{{ $t('pomodoro.minutes') }}</span>
             </div>
           </div>
@@ -193,7 +182,7 @@ document.addEventListener('fullscreenchange', updateFullscreenState)
             <span class="text-sm">{{ $t('pomodoro.shortMinutes') }}</span>
             <div class="flex items-center gap-2">
               <input v-model.number="pomodoroStore.settings.shortMinutes" type="number" min="1"
-                class="input-base w-16 px-2 py-1 text-center" @input="pomodoroStore.saveSettings()" :disabled="isPomodoroRunning" />
+                class="input-base w-16 px-2 py-1 text-center" :disabled="isPomodoroRunning" />
               <span class="text-xs">{{ $t('pomodoro.minutes') }}</span>
             </div>
           </div>
@@ -202,7 +191,7 @@ document.addEventListener('fullscreenchange', updateFullscreenState)
             <span class="text-sm">{{ $t('pomodoro.longMinutes') }}</span>
             <div class="flex items-center gap-2">
               <input v-model.number="pomodoroStore.settings.longMinutes" type="number" min="1"
-                class="input-base w-16 px-2 py-1 text-center" @input="pomodoroStore.saveSettings()" :disabled="isPomodoroRunning" />
+                class="input-base w-16 px-2 py-1 text-center" :disabled="isPomodoroRunning" />
               <span class="text-xs">{{ $t('pomodoro.minutes') }}</span>
             </div>
           </div>
@@ -211,18 +200,32 @@ document.addEventListener('fullscreenchange', updateFullscreenState)
             <span class="text-sm">{{ $t('pomodoro.cyclesBeforeLong') }}</span>
             <div class="flex items-center gap-2">
               <input v-model.number="pomodoroStore.settings.cyclesBeforeLong" type="number" min="1"
-                class="input-base w-16 px-2 py-1 text-center" @input="pomodoroStore.saveSettings()" :disabled="isPomodoroRunning" />
+                class="input-base w-16 px-2 py-1 text-center" :disabled="isPomodoroRunning" />
             </div>
           </div>
 
           <div class="flex items-center justify-between">
             <p class="text-sm">{{ $t('pomodoro.autoStart') }}</p>
-            <CheckBox v-model="pomodoroStore.settings.autoSwitch" @update:model-value="pomodoroStore.saveSettings()" :disabled="isPomodoroRunning" />
+            <CheckBox v-model="pomodoroStore.settings.autoSwitch" :disabled="isPomodoroRunning" />
           </div>
 
           <div class="flex items-center justify-between">
             <p class="text-sm">{{ $t('pomodoro.soundEnabled') }}</p>
-            <CheckBox v-model="pomodoroStore.settings.soundEnabled" @update:model-value="pomodoroStore.saveSettings()" :disabled="isPomodoroRunning" />
+            <CheckBox v-model="pomodoroStore.settings.soundEnabled" :disabled="isPomodoroRunning" />
+          </div>
+
+          <div class="flex justify-center mt-6">
+            <button
+              class="btn-primary px-6 py-2 rounded-lg text-sm font-medium"
+              :disabled="isPomodoroRunning"
+              @click="savePomodoroSettings"
+            >
+              {{ $t('settings.saveSettings') }}
+            </button>
+          </div>
+
+          <div v-if="showSaveConfirm" class="text-center text-sm text-green-600 mt-2">
+            {{ $t('settings.saved') }}
           </div>
         </div>
       </TabContent>

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import Popover from '@/components/common/Popover.vue';
 import Settings from '@/components/Settings.vue';
-import { useThemeStore } from '@/stores/theme';
+import { useThemeStore } from '@/stores/settings';
 
 type ModuleKey = 'pomodoro' | 'memos'
 

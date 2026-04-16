@@ -4,7 +4,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import i18n from './i18n'
 import './styles/index.css'
-import { useThemeStore } from './stores/theme'
+import { useThemeStore } from './stores/settings'
 
 const app = createApp(App)
 

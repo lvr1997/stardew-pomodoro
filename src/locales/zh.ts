@@ -32,6 +32,7 @@ export default {
     shortMinutes: '短休息时间',
     longMinutes: '长休息时间',
     cyclesBeforeLong: '长休息周期',
+    achievementTitle: '你有些事情想在今天结束时考虑一下...'
   },
   memos: {
     title: '备忘录',

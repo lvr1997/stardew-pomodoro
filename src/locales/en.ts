@@ -33,6 +33,7 @@ export default {
     shortMinutes: 'Short break time',
     longMinutes: 'Long break time',
     cyclesBeforeLong: 'Cycles before long break',
+    achievementTitle: 'You have some things you want to consider at the end of the day...'
   },
   memos: {
     title: 'Memos',

@@ -1,37 +1,39 @@
 <script lang="ts" setup>
-import CheckBox from '@/components/common/CheckBox.vue';
 import TimerProgress from '@/components/TimerProgress.vue';
-import { useThemeStore } from '@/stores/theme';
+import { useThemeStore } from '@/stores/settings';
 import { usePomodoroStore } from '@/stores/pomodoro';
 import { useTitle } from '@vueuse/core';
 import { computed, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
+import TomatoImg from '@/assets/icons/36px-Tomato.png'
 import { useI18n } from 'vue-i18n'
+import { useToastStore } from '@/stores/toast'
 
 type PomodoroMode = 'focus' | 'short' | 'long'
 
 const mode = ref<PomodoroMode>('focus')
-const remainingMs = ref(25 * 60 * 1000)
+const remainingMs = ref(0)
 const isRunning = computed({
   get: () => pomodoroStore.isRunning,
   set: (val: boolean) => { pomodoroStore.isRunning = val }
 })
 const cycleCount = ref(0)
 const { t } = useI18n()
+const toast = useToastStore()
+
+const achievementTitle = ref('')
+
+watch(cycleCount, (val, oldVal) => {
+  if (val > 0 && val % pomodoroStore.settings.cyclesBeforeLong === 0 && oldVal % pomodoroStore.settings.cyclesBeforeLong !== 0) {
+    achievementTitle.value = t('pomodoro.achievementTitle')
+    toast.show(achievementTitle.value)
+  }
+})
 const themeStore = useThemeStore()
 const pomodoroStore = usePomodoroStore()
 
 let intervalId: number | null = null
 let lastTick = 0
 let audioContext: AudioContext | null = null
-
-const STORAGE_KEY = 'pomodoroState'
-
-interface PomodoroTimerState {
-  mode: PomodoroMode
-  remainingMs: number
-  isRunning: boolean
-  cycleCount: number
-}
 
 /**
  * Get the duration in milliseconds for a given mode.
@@ -42,7 +44,7 @@ const getDurationMs = (targetMode: PomodoroMode): number => {
     : targetMode === 'short'
       ? pomodoroStore.settings.shortMinutes
       : pomodoroStore.settings.longMinutes
-  return Math.max(1, minutes) * 60 * 1000
+  return minutes * 60 * 1000
 }
 
 /**
@@ -60,35 +62,7 @@ const formatTime = (ms: number): string => {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
 
-/**
- * Persist current state into localStorage.
- */
-const saveState = () => {
-  const payload: PomodoroTimerState = {
-    mode: mode.value,
-    remainingMs: remainingMs.value,
-    isRunning: isRunning.value,
-    cycleCount: cycleCount.value
-  }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
-}
 
-/**
- * Load state from localStorage.
- */
-const loadState = () => {
-  const stored = localStorage.getItem(STORAGE_KEY)
-  if (!stored) return
-  try {
-    const parsed = JSON.parse(stored) as PomodoroTimerState
-    mode.value = parsed.mode || 'focus'
-    remainingMs.value = parsed.remainingMs || getDurationMs(parsed.mode || 'focus')
-    isRunning.value = false
-    cycleCount.value = Number.isFinite(parsed.cycleCount) ? Math.max(0, parsed.cycleCount) : 0
-  } catch {
-    // Ignore invalid stored data
-  }
-}
 
 /**
  * Switch mode and reset timer.
@@ -199,9 +173,18 @@ const cycleProgress = computed(() => {
   return (cycleCount.value % total) + 1
 })
 
+
 const completedCycles = computed(() => {
   const total = pomodoroStore.settings.cyclesBeforeLong
   return Math.min(Math.max(0, cycleCount.value), total)
+})
+
+// 番茄品质 class 计算
+const qualityClass = computed(() => {
+  if (completedCycles.value >= 4) return 'iridium'
+  if (completedCycles.value === 3) return 'gold'
+  if (completedCycles.value === 2) return 'silver'
+  return ''
 })
 
 const timerProgress = computed(() => {
@@ -213,13 +196,18 @@ watchEffect(() => {
   documentTitle.value = `${timeLabel.value} | ${isRunning.value ? 'Running' : 'Pause'}`
 })
 
-watch([mode, remainingMs, isRunning, cycleCount], () => {
-  saveState()
-})
+
+// 响应 store.settings 变化自动刷新 remainingMs
+watch(
+  () => [pomodoroStore.settings.focusMinutes, pomodoroStore.settings.shortMinutes, pomodoroStore.settings.longMinutes],
+  () => {
+    remainingMs.value = getDurationMs(mode.value)
+  }
+)
+
 
 onMounted(() => {
-  pomodoroStore.loadSettings()
-  loadState()
+  remainingMs.value = getDurationMs(mode.value)
 })
 
 onUnmounted(() => {
@@ -239,34 +227,32 @@ onUnmounted(() => {
         <button class="btn" @click="resetTimer">
           <i class="i-pixelarticons:reload"></i>
         </button>
-        <button class="btn" @click="pomodoroStore.settings.soundEnabled = !pomodoroStore.settings.soundEnabled; pomodoroStore.saveSettings()">
+        <button class="btn" @click="pomodoroStore.settings.soundEnabled = !pomodoroStore.settings.soundEnabled;">
           <i :class="pomodoroStore.settings.soundEnabled ? 'i-pixelarticons:volume-3' : 'i-pixelarticons:volume'"></i>
         </button>
       </div>
 
-       <div class="text-6xl font-semibold text-center tracking-widest select-none"
-          @click="isRunning ? pauseTimer() : startTimer()">
-          {{ timeLabel }}
-        </div>
+      <div class="text-6xl font-semibold text-center tracking-widest select-none"
+        @click="isRunning ? pauseTimer() : startTimer()">
+        {{ timeLabel }}
+      </div>
 
       <!-- Timer Progress Bar with Junimo -->
-      <TimerProgress 
-        :value="timerProgress"
-        :show-junimo="true"
-        :junimo-follows-progress="true"
-      />
+      <TimerProgress :value="timerProgress" :show-junimo="true" :junimo-follows-progress="true" />
 
-     
+
 
       <div class="flex flex-col items-center gap-4">
         <div class="flex items-center gap-2 text-sm text-gray-500">
           <span>{{ t('pomodoro.circle') }} {{ cycleProgress }}</span>
-          <span v-for="index in pomodoroStore.settings.cyclesBeforeLong" :key="index" class="inline-flex">
-            <i class="i-pixelarticons:coffee-alt"
-              :class="index <= completedCycles ? 'text-primary' : 'text-gray-300'" />
-          </span>
+          <div class="quality">
+            <div class="quality-badge" :class="qualityClass"></div>
+            <img :src="TomatoImg" alt="Tomato" class="tomato-img" />
+          </div>
         </div>
       </div>
+
+
 
       <div class="grid grid-cols-3 gap-3">
         <button class="btn" @click="setMode('focus')">
@@ -284,4 +270,41 @@ onUnmounted(() => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.quality {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+.quality-badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  z-index: 2;
+  transition: background 0.2s;
+}
+
+.quality-badge.silver {
+  background: url('../assets/icons/24px-Silver_Quality_Icon.png') no-repeat center / cover;
+}
+
+.quality-badge.gold {
+  background: url('../assets/icons/24px-Gold_Quality_Icon.png') no-repeat center / cover;
+}
+
+.quality-badge.iridium {
+  background: url('../assets/icons/24px-Iridium_Quality_Icon.png') no-repeat center / cover;
+}
+
+.tomato-img {
+  width: 24px;
+  height: 24px;
+  display: block;
+  z-index: 1;
+}
+</style>
